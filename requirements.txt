@@ -6,3 +6,6 @@ SQLAlchemy
 databases
 passlib
 asyncpg
+python-jose
+passlib
+python-multipart
