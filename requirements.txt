@@ -2,4 +2,7 @@ fastapi
 uvicorn
 psycopg2-binary
 pydantic
-jinja2
+SQLAlchemy
+databases
+passlib
+asyncpg
