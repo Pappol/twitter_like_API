@@ -1,0 +1,62 @@
+/* General body styling */
+body {
+    background-color: #121212; /* Dark background */
+    color: #ffffff; /* Light text */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Header styling */
+h1 {
+    color: #1DB954; /* A bright color for the main heading */
+}
+
+/* Form styling */
+form {
+    background-color: #1c1c1c;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 300px;
+    margin: auto;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1DB954;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #1aa34a;
+}
+
+/* Link styling */
+a {
+    color: #1DB954;
+}
+
+/* Error message styling */
+#error-message {
+    background-color: #ff0033;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin-top: 20px;
+}
