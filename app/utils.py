@@ -1,18 +1,17 @@
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, FastAPI
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from starlette.requests import Request
 from databases import Database
-from sqlalchemy import create_engine
 from passlib.context import CryptContext
 import os
-from sqlalchemy import Table, Column, Integer, String, MetaData
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime, create_engine, select
 from pydantic import BaseModel
-from sqlalchemy import Table, Column, ForeignKey, DateTime
-from datetime import datetime
+from datetime import datetime, timedelta
+from structs import *
+
 
 # Your secret key
 SECRET_KEY = "your_secret_key"
@@ -20,6 +19,8 @@ ALGORITHM = "HS256"
 
 # This should match the tokenUrl you set in OAuth2PasswordBearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class TokenData(BaseModel):
     username: str = None
@@ -45,10 +46,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
-# A function to fetch user data from the database
-def get_user_by_username(username: str):
-    # Your database query here
-    pass
+
+async def get_user_by_username(username: str):
+    query = select([users]).where(users.c.username == username)
+    result = await database.fetch_one(query)
+
+    if result:
+        user_data = User(
+            username=result["username"],
+            email=result["email"],
+            password=result["hashed_password"]
+        )
+        return user_data
+
+    return None
+
 
 # Function to create access token
 def create_access_token(data: dict):
@@ -57,3 +69,15 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+async def authenticate_user(username: str, password: str):
+    user = await get_user_by_username(username)
+    if user and verify_password(password, user.hashed_password):
+        return user
+    return None
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)

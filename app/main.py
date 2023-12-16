@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-
 from fastapi.security import OAuth2PasswordRequestForm
 
 from utils import *
@@ -10,9 +9,6 @@ from structs import *
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 @app.on_event("startup")
 async def startup():
@@ -28,7 +24,11 @@ async def shutdown():
 
 @app.get("/")
 def get_login(request: Request):
-    return RedirectResponse(url="/static/login.html")
+    #check if user is logged in
+    if request.cookies.get("access_token"):
+        return RedirectResponse(url="/static/home.html")
+    else:
+        return RedirectResponse(url="/static/login.html")
 
 @app.get("/registration")
 def get_login(request: Request):
@@ -66,6 +66,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
