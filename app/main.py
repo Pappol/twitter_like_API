@@ -46,12 +46,6 @@ def hash_password(password):
 @app.on_event("startup")
 async def startup():
     Base.metadata.create_all(bind=engine)
-    #test database
-    db = SessionLocal()
-    user = User(username="test", hashed_password=hash_password("test"), tweets=[])
-    db.add(user)
-    db.commit()
-    db.close()
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -79,10 +73,10 @@ def register_user(register_data: LoginSchema, db: Session = Depends(get_db)):
 
 
 @app.post("/login")
-def login_user(username: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == username).first()
+def login_user(register_data: LoginSchema, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == register_data.username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if not pwd_context.verify(password, user.hashed_password):
+    if not pwd_context.verify(register_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect password")
     return {"message": "Logged in successfully!"}
