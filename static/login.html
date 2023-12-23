@@ -5,7 +5,7 @@
 </head>
 <body>
     
-  <h1 style="text-align: center;">Welcome to My Web Page</h1>
+  <h1 style="text-align: center;">Log in Twitter</h1>
   <link rel="stylesheet" type="text/css" href="style.css">
 
   <form id="loginForm">
@@ -23,24 +23,35 @@
     document.getElementById('loginForm').onsubmit = async function(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const data = Object.fromEntries(formData.entries());
+        const data = new URLSearchParams();
+        for (const pair of formData) {
+            data.append(pair[0], pair[1]);
+        }
+
         try {
             const response = await fetch('/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify(data)
+                body: data
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                document.getElementById('errorMessage').innerText = errorData.detail;
-            } else {
+            // Check if the response is JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
                 const result = await response.json();
-                console.log(result);
-                // Handle successful login, maybe redirect to another page or clear the form
-                document.getElementById('errorMessage').innerText = '';
+                if (!response.ok) {
+                    document.getElementById('errorMessage').innerText = result.detail;
+                } else {
+                    console.log(result);
+                    // Handle successful login
+                    document.getElementById('errorMessage').innerText = '';
+                }
+            } else {
+                // Handle non-JSON response
+                console.error('Received non-JSON response');
+                document.getElementById('errorMessage').innerText = 'An error occurred. Please try again.';
             }
         } catch (error) {
             console.error('Error:', error);
@@ -48,6 +59,8 @@
         }
     };
 </script>
+
+
   
 </body>
 </html>

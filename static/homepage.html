@@ -1,1 +1,112 @@
 <link rel="stylesheet" type="text/css" href="style.css">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Twitter-Like API</title>
+</head>
+<body>
+    <h1>Twitter-Like API Interface</h1>
+
+    <!-- Upload New Tweet -->
+    <section>
+        <h2>Post a New Tweet</h2>
+        <form id="postTweetForm">
+            <input type="text" id="tweetContent" placeholder="What's happening?" required>
+            <button type="submit">Tweet</button>
+        </form>
+    </section>
+
+    <!-- Fetch Latest Tweets -->
+    <section>
+        <h2>Latest Tweets</h2>
+        <button id="fetchLatestTweets">Refresh</button>
+        <div id="latestTweets"></div>
+    </section>
+
+    <!-- Fetch Latest Tweets of a Specific User -->
+    <section>
+        <h2>User's Latest Tweets</h2>
+        <form id="userTweetsForm">
+            <input type="text" id="userName" placeholder="Enter username" required>
+            <button type="submit">Fetch Tweets</button>
+        </form>
+        <div id="userTweets"></div>
+    </section>
+
+    <!-- Search for Tweets -->
+    <section>
+        <h2>Search Tweets</h2>
+        <form id="searchTweetsForm">
+            <input type="text" id="searchQuery" placeholder="Search words or #hashtags" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="searchResults"></div>
+    </section>
+
+    <script>
+        // Function to post a tweet
+        async function postTweet(content) {
+            const response = await fetch('/tweet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content })
+            });
+            return response.json();
+        }
+    
+        // Function to get latest tweets
+        async function getLatestTweets() {
+            const response = await fetch('/tweets');
+            return response.json();
+        }
+    
+        // Function to get tweets of a specific user
+        async function getUserTweets(userId) {
+            const response = await fetch(`/tweets/${userId}`);
+            return response.json();
+        }
+    
+        // Function to search tweets
+        async function searchTweets(keyword) {
+            const response = await fetch(`/search_tweets?keyword=${encodeURIComponent(keyword)}`);
+            return response.json();
+        }
+    
+        // Event listener for posting a tweet
+        document.getElementById('postTweetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tweetContent = document.getElementById('tweetContent').value;
+            const result = await postTweet(tweetContent);
+            console.log(result); // Handle the response
+        });
+    
+        // Event listener for fetching latest tweets
+        document.getElementById('fetchLatestTweets').addEventListener('click', async () => {
+            const tweets = await getLatestTweets();
+            console.log(tweets); // Update the UI with these tweets
+        });
+    
+        // Event listener for fetching a user's tweets
+        document.getElementById('userTweetsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('userName').value; // Assuming userName is the user ID
+            const tweets = await getUserTweets(userId);
+            console.log(tweets); // Update the UI with these tweets
+        });
+    
+        // Event listener for searching tweets
+        document.getElementById('searchTweetsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = document.getElementById('searchQuery').value;
+            const tweets = await searchTweets(keyword);
+            console.log(tweets); // Update the UI with the search results
+        });
+    </script>
+    
+</body>
+</html>

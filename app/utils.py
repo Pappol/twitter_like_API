@@ -57,10 +57,10 @@ async def get_user_by_username(username: str):
             email=result["email"],
             password=result["hashed_password"]
         )
+        print(user_data)
         return user_data
 
     return None
-
 
 # Function to create access token
 def create_access_token(data: dict):

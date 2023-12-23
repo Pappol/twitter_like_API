@@ -27,7 +27,7 @@ tweets = Table(
 class User(BaseModel):
     username: str
     email: str 
-    password: str
+    hashed_password: str
 
 class Tweet(BaseModel):
     content: str
