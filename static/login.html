@@ -8,59 +8,18 @@
   <h1 style="text-align: center;">Log in Twitter</h1>
   <link rel="stylesheet" type="text/css" href="style.css">
 
-  <form id="loginForm">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-</form>
+  <h2>Login</h2>
+    <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
 <div id="errorMessage" style="color: red;"></div>
 
 <p style="text-align: center;">
   Don't have an account? <a href="/registration">Register here</a>
 </p>
+<script src="script.js"></script>
 
-<script>
-    document.getElementById('loginForm').onsubmit = async function(event) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        const data = new URLSearchParams();
-        for (const pair of formData) {
-            data.append(pair[0], pair[1]);
-        }
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: data
-            });
-
-            // Check if the response is JSON
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const result = await response.json();
-                if (!response.ok) {
-                    document.getElementById('errorMessage').innerText = result.detail;
-                } else {
-                    console.log(result);
-                    // Handle successful login
-                    document.getElementById('errorMessage').innerText = '';
-                }
-            } else {
-                // Handle non-JSON response
-                console.error('Received non-JSON response');
-                document.getElementById('errorMessage').innerText = 'An error occurred. Please try again.';
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('errorMessage').innerText = 'An error occurred. Please try again.';
-        }
-    };
-</script>
-
-
-  
 </body>
 </html>

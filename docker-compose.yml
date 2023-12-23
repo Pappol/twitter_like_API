@@ -11,9 +11,8 @@ services:
       - db
   db:
     image: postgres
-    environment:
-      POSTGRES_DB: twitter-like
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: pappol
+    
+    env_file:
+      - tw.env
     volumes:
       - ./data/db:/var/lib/postgresql/data

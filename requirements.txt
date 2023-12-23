@@ -11,3 +11,4 @@ passlib
 python-multipart
 pytest
 requests
+alembic
