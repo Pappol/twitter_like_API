@@ -120,13 +120,29 @@ def login_user(register_data: LoginSchema, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-
-@app.post("/tweet")
+@app.post("/tweets")
 def post_tweet(tweet_data: TweetSchema, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
-    # Assuming get_current_user_id is a dependency that extracts the user's ID from the request
     tweet = Tweet(content=tweet_data.content, user_id=user_id)
     db.add(tweet)
     db.commit()
     db.refresh(tweet)
     return {"message": "Tweet posted successfully!", "tweet_id": tweet.id}
 
+#get the latest tweets
+@app.get("/tweets")
+def get_tweets(db: Session = Depends(get_db)):
+    tweets = db.query(Tweet).order_by(Tweet.date_posted.desc()).all()
+    #get the first 10 tweets
+    tweets = tweets[:10]
+    return tweets
+
+#getch the latest tweets of a user
+@app.get("/tweets/{username}")
+def get_tweets_by_user(username: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    tweets = db.query(Tweet).filter(Tweet.user_id == user.id).order_by(Tweet.date_posted.desc()).all()
+    #get the first 10 tweets
+    tweets = tweets[:10]
+    return tweets
