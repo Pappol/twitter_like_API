@@ -8,3 +8,6 @@ class LoginSchema(BaseModel):
 
 class TweetSchema(BaseModel):
     content: str
+
+class SearchSchema(BaseModel):
+    term: str

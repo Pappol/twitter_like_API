@@ -13,6 +13,8 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from sqlalchemy import or_
+
 
 SECRET_KEY = os.getenv("SECRET_KEY")  # secret key for encoding and decoding JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
@@ -99,6 +101,19 @@ def get_register(request: Request):
 def register_user(register_data: LoginSchema, db: Session = Depends(get_db)):
     hashed_password = pwd_context.hash(register_data.password)
     user = User(username=register_data.username, hashed_password=hashed_password)
+
+    #check if username already exists
+    if db.query(User).filter(User.username == register_data.username).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    #check if username is empty
+    if not register_data.username:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+    
+    #check if password is empty
+    if not register_data.password:
+        raise HTTPException(status_code=400, detail="Password cannot be empty")
+    
     db.add(user)
     db.commit()
     return {"username": register_data.username}
@@ -136,6 +151,21 @@ def get_tweets(db: Session = Depends(get_db)):
     tweets = tweets[:10]
     return tweets
 
+@app.get("/search")
+def search_tweets(search: SearchSchema, db: Session = Depends(get_db)):
+    term = search.term
+    tweets = db.query(Tweet).filter(
+        or_(
+            Tweet.content.ilike(f"%{term}%")
+        )
+    ).order_by(Tweet.date_posted.desc()).all()
+
+    # Limit the results to the first 10 tweets
+    tweets = tweets[:10]
+
+    return tweets
+
+
 #getch the latest tweets of a user
 @app.get("/tweets/{username}")
 def get_tweets_by_user(username: str, db: Session = Depends(get_db)):
@@ -146,3 +176,5 @@ def get_tweets_by_user(username: str, db: Session = Depends(get_db)):
     #get the first 10 tweets
     tweets = tweets[:10]
     return tweets
+
+
