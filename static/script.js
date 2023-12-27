@@ -1,51 +1,41 @@
-document.getElementById('registerForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    let username = document.getElementById('registerUsername').value;
-    let password = document.getElementById('registerPassword').value;
-    registerUser(username, password);
-});
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const errorMessageDiv = document.getElementById('errorMessage');
 
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    let username = document.getElementById('loginUsername').value;
-    let password = document.getElementById('loginPassword').value;
-    loginUser(username, password);
-});
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
 
-function registerUser(username, password) {
-    fetch('http://localhost:8000/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            username: username,
-            password: password
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => alert('Registration successful!'))
-    .catch((error) => {
-        console.error('Error:', error);
-        alert('Registration failed!');
-    });
-}
-
-function loginUser(username, password) {
-    fetch('http://localhost:8000/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            username: username,
-            password: password
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Login failed');
+            }
+            return response.json();
         })
-    })
-    .then(response => response.json())
-    .then(data => alert('Login successful!'))
-    .catch((error) => {
-        console.error('Error:', error);
-        alert('Login failed!');
+        .then(data => {
+            console.log('Login successful:', data);
+
+            localStorage.setItem('token', data.access_token);
+
+            // Redirect to the home page including in the header the token
+            window.location.href = '/static/home.html';
+
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMessageDiv.textContent = 'Login failed: ' + error.message;
+        });
     });
-}
+});
