@@ -106,10 +106,6 @@ def register_user(register_data: LoginSchema, db: Session = Depends(get_db)):
     hashed_password = pwd_context.hash(register_data.password)
     user = User(username=register_data.username, hashed_password=hashed_password)
 
-    #check if username already exists
-    if db.query(User).filter(User.username == register_data.username).first():
-        raise HTTPException(status_code=400, detail="Username already exists")
-    
     #check if username is empty
     if not register_data.username:
         raise HTTPException(status_code=400, detail="Username cannot be empty")
@@ -117,6 +113,10 @@ def register_user(register_data: LoginSchema, db: Session = Depends(get_db)):
     #check if password is empty
     if not register_data.password:
         raise HTTPException(status_code=400, detail="Password cannot be empty")
+    
+    #check if username already exists
+    if db.query(User).filter(User.username == register_data.username).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
     
     db.add(user)
     db.commit()
@@ -169,6 +169,20 @@ def search_tweets(search: SearchSchema, db: Session = Depends(get_db)):
 
     return tweets
 
+@app.delete("/users/{username}", tags=["users"])
+async def delete_user(username: str, db: Session = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    # Check if user exists
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Only the user can delete itself
+    if user_id != user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully!"}
 
 #getch the latest tweets of a user
 @app.get("/tweets/{username}", tags=["tweets"])
