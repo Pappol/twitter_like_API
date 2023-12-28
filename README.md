@@ -60,12 +60,10 @@ git clone https://github.com/Pappol/twitter_like_API
 
 ```
 
-Set Environment Variables:
+Set Environment Variables in the tw.env file:
 - SECRET_KEY: A secret key for JWT encoding and decoding.
 - ACCESS_TOKEN_EXPIRE_MINUTES: Token expiration time in minutes.
 - POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB: PostgreSQL credentials.
-
-in the tw.env file
 
 Run the application:
 ```
