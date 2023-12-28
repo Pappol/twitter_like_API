@@ -1,41 +1,106 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
-    const errorMessageDiv = document.getElementById('errorMessage');
+    const registerForm = document.getElementById('registerForm');
+    const errorMessage = document.createElement('div');
 
-    loginForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+    // Function to make authenticated requests
+    async function fetchWithAuth(url, options = {}) {
+        // Retrieve the token from local storage
+        const token = localStorage.getItem('token');
 
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
+        // Add the Authorization header to the request
+        const headers = new Headers(options.headers || {});
+        if (token) {
+            headers.append('Authorization', `Bearer ${token}`);
+        }
 
-        fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Login failed');
+        // Make the fetch request with the updated headers
+        const response = await fetch(url, { ...options, headers });
+        return response.json();
+    }
+
+    // Login functionality
+    if (loginForm) {
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+
+            // Get user input
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                // Send POST request to the server
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                // Check if login was successful
+                if (response.ok) {
+                    // Store the token in local storage
+                    localStorage.setItem('token', result.access_token);
+
+                    // Redirect to the homepage
+                    window.location.href = '/';
+                } else {
+                    // Display error message
+                    errorMessage.textContent = result.detail || 'Login failed. Please try again.';
+                    loginForm.appendChild(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                loginForm.appendChild(errorMessage);
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Login successful:', data);
+        };
+    }
 
-            localStorage.setItem('token', data.access_token);
+    // Registration functionality
+    if (registerForm) {
+        registerForm.onsubmit = async (e) => {
+            e.preventDefault();
 
-            // Redirect to the home page including in the header the token
-            window.location.href = '/static/home.html';
+            // Get user input
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
 
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            errorMessageDiv.textContent = 'Login failed: ' + error.message;
-        });
-    });
+            try {
+                // Send POST request to the server
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                // Check if registration was successful
+                if (response.ok) {
+                    alert('Registration successful! You can now log in.');
+                    window.location.href = '/static/login.html'; // Redirect to the login page
+                } else {
+                    // Display error message
+                    errorMessage.textContent = result.detail || 'Registration failed. Please try again.';
+                    registerForm.appendChild(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                registerForm.appendChild(errorMessage);
+            }
+        };
+    }
 });

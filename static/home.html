@@ -1,4 +1,4 @@
-<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="home.css">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,32 +49,60 @@
     <script>
         // Function to post a tweet
         async function postTweet(content) {
-            const response = await fetch('/tweet', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ content })
-            });
-            return response.json();
+            try {
+                const response = await fetch('/tweets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+                return response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     
         // Function to get latest tweets
         async function getLatestTweets() {
-            const response = await fetch('/tweets');
-            return response.json();
+            try {
+                const response = await fetch('/tweets');
+                return response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     
         // Function to get tweets of a specific user
-        async function getUserTweets(userId) {
-            const response = await fetch(`/tweets/${userId}`);
-            return response.json();
+        async function getUserTweets(username) {
+            try {
+                const response = await fetch(`/tweets/${username}`);
+                return response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     
         // Function to search tweets
         async function searchTweets(keyword) {
-            const response = await fetch(`/search_tweets?keyword=${encodeURIComponent(keyword)}`);
-            return response.json();
+            try {
+                const response = await fetch(`/search?term=${encodeURIComponent(keyword)}`);
+                return response.json();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    
+        // Function to update UI with tweets
+        function updateTweetsDisplay(tweets, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Clear previous tweets
+            tweets.forEach(tweet => {
+                const tweetElement = document.createElement('div');
+                tweetElement.classList.add('tweet');
+                tweetElement.textContent = tweet.content; // Assuming 'content' is the field name
+                container.appendChild(tweetElement);
+            });
         }
     
         // Event listener for posting a tweet
@@ -82,21 +110,24 @@
             e.preventDefault();
             const tweetContent = document.getElementById('tweetContent').value;
             const result = await postTweet(tweetContent);
-            console.log(result); // Handle the response
+            if (result && result.message) {
+                alert('Tweet posted successfully!');
+                getLatestTweets().then(tweets => updateTweetsDisplay(tweets, 'latestTweets'));
+            }
         });
     
         // Event listener for fetching latest tweets
         document.getElementById('fetchLatestTweets').addEventListener('click', async () => {
             const tweets = await getLatestTweets();
-            console.log(tweets); // Update the UI with these tweets
+            updateTweetsDisplay(tweets, 'latestTweets');
         });
     
         // Event listener for fetching a user's tweets
         document.getElementById('userTweetsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const userId = document.getElementById('userName').value; // Assuming userName is the user ID
-            const tweets = await getUserTweets(userId);
-            console.log(tweets); // Update the UI with these tweets
+            const username = document.getElementById('userName').value;
+            const tweets = await getUserTweets(username);
+            updateTweetsDisplay(tweets, 'userTweets');
         });
     
         // Event listener for searching tweets
@@ -104,7 +135,7 @@
             e.preventDefault();
             const keyword = document.getElementById('searchQuery').value;
             const tweets = await searchTweets(keyword);
-            console.log(tweets); // Update the UI with the search results
+            updateTweetsDisplay(tweets, 'searchResults');
         });
     </script>
     

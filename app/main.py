@@ -92,7 +92,7 @@ async def shutdown():
 @app.get("/")
 def get_homepage(request: Request):
     #check if user is logged in
-    if request.cookies.get("access_token"):
+    if request.headers.get("Authorization"):
         return RedirectResponse(url="/static/home.html")
     else:
         return RedirectResponse(url="/static/login.html")
