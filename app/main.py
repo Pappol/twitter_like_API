@@ -151,6 +151,7 @@ def post_tweet(tweet_data: TweetSchema, db: Session = Depends(get_db), user_id: 
 @app.get("/tweets", tags=["tweets"])
 def get_tweets(db: Session = Depends(get_db)):
     tweets = db.query(Tweet).order_by(Tweet.date_posted.desc()).all()
+
     #get the first 10 tweets
     tweets = tweets[:10]
     return tweets
@@ -184,7 +185,6 @@ async def delete_user(username: str, db: Session = Depends(get_db), user_id: int
     db.commit()
     return {"message": "User deleted successfully!"}
 
-#getch the latest tweets of a user
 @app.get("/tweets/{username}", tags=["tweets"])
 def get_tweets_by_user(username: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
